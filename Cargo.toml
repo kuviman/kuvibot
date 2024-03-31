@@ -8,9 +8,19 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
 env_logger = "0.11.3"
+eyre = "0.6.12"
+futures = "0.3.30"
+hyper = { version = "0.14", features = ["full"] }
 log = "0.4.21"
-reqwest = "0.12.2"
+open = "5.1.2"
+rand = "0.8.5"
+reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
-tokio = { version = "1.37.0", features = ["rt-multi-thread", "time"] }
-twitch-irc = "5.0.1"
+tmi = "0.5.0"
+tokio = { version = "1.37.0", features = ["rt-multi-thread", "time", "macros"] }
+toml = "0.8.12"
+twitch_api = { version = "0.7.0-rc.7", features = ["all", "reqwest"] }
+twitch_oauth2 = { version = "0.12.9", features = ["all"] }
+url = "2.5.0"
+websocket-lite = "0.5.2"
