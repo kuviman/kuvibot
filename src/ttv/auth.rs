@@ -169,5 +169,5 @@ pub async fn wait_for_request_uri() -> eyre::Result<Url> {
         .ok_or_else(|| eyre::Report::msg("Failed to wait for the request"))?;
     Ok(Url::parse("http://localhost:3000")
         .unwrap()
-        .join(&uri.path_and_query().unwrap().as_str())?)
+        .join(uri.path_and_query().unwrap().as_str())?)
 }

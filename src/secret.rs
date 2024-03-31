@@ -35,16 +35,16 @@ impl Secrets {
         let login = login.as_ref();
         log::debug!("Getting ttv token for {:?}", login);
         let tokens_file_path = self.path.join("tokens").join(format!("{}.json", login));
-        let tokens: crate::auth::Tokens = match std::fs::File::open(&tokens_file_path) {
+        let tokens: crate::ttv::auth::Tokens = match std::fs::File::open(&tokens_file_path) {
             Ok(file) => {
                 log::debug!("Reading existing tokens");
-                let tokens: crate::auth::Tokens = serde_json::from_reader(file)?;
-                if crate::auth::validate(&tokens.access_token).await? {
+                let tokens: crate::ttv::auth::Tokens = serde_json::from_reader(file)?;
+                if crate::ttv::auth::validate(&tokens.access_token).await? {
                     log::debug!("Token still valid");
                     tokens
                 } else {
                     log::debug!("Token invalid, refreshing");
-                    crate::auth::refresh(
+                    crate::ttv::auth::refresh(
                         &self.config.ttv.client_id,
                         &self.config.ttv.client_secret,
                         &tokens.refresh_token,
@@ -54,12 +54,12 @@ impl Secrets {
             }
             Err(_) => {
                 log::info!("Auth not setup, prepare to login as {:?}", login);
-                crate::auth::authenticate(
+                crate::ttv::auth::authenticate(
                     &self.config.ttv.client_id,
                     &self.config.ttv.client_secret,
                     true,
                     &["channel:read:redemptions", "chat:edit", "chat:read"]
-                        .map(crate::auth::Scope::new),
+                        .map(crate::ttv::auth::Scope::new),
                 )
                 .await?
             }
