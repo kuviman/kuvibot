@@ -1,5 +1,7 @@
+use twitch_bot::service;
+use twitch_bot::service::{Event, TwitchApi};
+
 mod secret;
-mod ttv;
 
 #[derive(serde::Deserialize)]
 pub struct TextCommand {
@@ -45,11 +47,11 @@ impl Save {
     }
 }
 
-async fn get_tokens(config: &Config) -> eyre::Result<ttv::Tokens> {
+async fn get_tokens(config: &Config) -> eyre::Result<service::Tokens> {
     let secrets = secret::Secrets::init()?;
     let bot = secrets.get_user_token(&config.bot_account).await?;
     let channel = secrets.get_user_token(&config.channel).await?;
-    Ok(ttv::Tokens { bot, channel })
+    Ok(service::Tokens { bot, channel })
 }
 
 #[tokio::main]
@@ -61,7 +63,7 @@ async fn main() -> eyre::Result<()> {
 
     let config: Config = toml::de::from_str(&std::fs::read_to_string("config.toml")?)?;
     let tokens = get_tokens(&config).await?;
-    let mut ttv = ttv::TwitchApi::connect(&config.channel, &tokens).await?;
+    let mut ttv = TwitchApi::connect(&config.channel, &tokens).await?;
     ttv.say("Hello, im a bot").await;
 
     let mut save = Save::load()?;
@@ -69,7 +71,7 @@ async fn main() -> eyre::Result<()> {
     loop {
         let event = ttv.recv().await;
         match event {
-            ttv::Event::EventSub(
+            Event::EventSub(
                 twitch_api::eventsub::Event::ChannelPointsCustomRewardRedemptionAddV1(redemption),
             ) => {
                 match redemption.message {
@@ -84,7 +86,7 @@ async fn main() -> eyre::Result<()> {
                     _ => todo!(),
                 };
             }
-            ttv::Event::Tmi(msg) => {
+            Event::Tmi(msg) => {
                 if let tmi::Message::Privmsg(msg) = msg.as_typed()? {
                     if let Some(cmd) = msg.text().split_whitespace().next() {
                         match cmd {
