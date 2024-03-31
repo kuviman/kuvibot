@@ -1,3 +1,5 @@
+use futures::FutureExt;
+
 pub mod auth;
 mod eventsub;
 
@@ -8,15 +10,16 @@ pub struct Tokens {
 }
 
 pub struct TwitchApi {
-    receiver: async_channel::Receiver<Event>,
+    event_receiver: async_channel::Receiver<Event>,
+    say_sender: async_channel::Sender<String>,
 }
 
 impl TwitchApi {
     pub async fn connect(channel: &str, tokens: &Tokens) -> eyre::Result<Self> {
-        let (sender, receiver) = async_channel::unbounded();
+        let (event_sender, event_receiver) = async_channel::unbounded();
         let (eventsub_sender, eventsub_receiver) = async_channel::bounded(10);
         tokio::spawn({
-            let sender = sender.clone();
+            let sender = event_sender.clone();
             async move {
                 while let Ok(event) = eventsub_receiver.recv().await {
                     let _ = sender.send(Event::EventSub(event)).await;
@@ -31,6 +34,7 @@ impl TwitchApi {
                 Ok::<_, eyre::Error>(())
             }
         });
+        let (say_sender, say_receiver) = async_channel::bounded::<String>(1);
         let _tmi = tokio::spawn({
             let channel = channel.to_owned();
             let token = tokens.bot.clone();
@@ -45,40 +49,56 @@ impl TwitchApi {
                 .await
                 .expect("Failed to connect to tmi");
 
-                let channels: Vec<tmi::Channel> = vec![tmi::Channel::parse(format!("#{channel}"))?];
-                tmi.join_all(&channels).await?;
+                let channel = tmi::Channel::parse(format!("#{channel}"))?;
+                tmi.join_all([&channel]).await?;
 
                 log::info!("Joined tmi");
 
                 loop {
-                    let msg = tmi.recv().await?;
-                    match msg.as_typed()? {
-                        tmi::Message::Reconnect => {
-                            tmi.reconnect().await?;
-                            tmi.join_all(&channels).await?;
+                    futures::select! {
+                        msg = tmi.recv().fuse() => {
+                            let msg = msg?;
+                            match msg.as_typed()? {
+                                tmi::Message::Reconnect => {
+                                    tmi.reconnect().await?;
+                                    tmi.join_all([&channel]).await?;
+                                }
+                                tmi::Message::Ping(ping) => {
+                                    tmi.pong(&ping).await?;
+                                }
+                                _ => {}
+                            };
+                            let _ = event_sender.send(Event::Tmi(msg)).await;
                         }
-                        tmi::Message::Ping(ping) => {
-                            tmi.pong(&ping).await?;
+                        say = say_receiver.recv().fuse() => {
+                            if let Ok(say) = say {
+                                tmi.privmsg(&channel, &say).send().await?;
+                            }
                         }
-                        _ => {}
-                    };
-                    let _ = sender.send(Event::Tmi(msg)).await;
+                    }
                 }
 
                 #[allow(unreachable_code)]
                 Ok::<_, eyre::Error>(())
             }
         });
-        Ok(Self { receiver })
+        Ok(Self {
+            event_receiver,
+            say_sender,
+        })
     }
 
     pub async fn recv(&mut self) -> Event {
-        match self.receiver.recv().await {
+        match self.event_receiver.recv().await {
             Ok(event) => event,
             Err(e) => {
                 panic!("{e}");
             }
         }
+    }
+
+    pub async fn say(&mut self, text: impl AsRef<str>) {
+        let _ = self.say_sender.send(text.as_ref().to_owned()).await;
     }
 }
 

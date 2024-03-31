@@ -24,6 +24,7 @@ async fn main() -> eyre::Result<()> {
     let config: Config = toml::de::from_str(&std::fs::read_to_string("config.toml")?)?;
     let tokens = get_tokens(&config).await?;
     let mut ttv = ttv::TwitchApi::connect(&config.channel, &tokens).await?;
+    ttv.say("Hello, im a bot").await;
     loop {
         let event = ttv.recv().await;
         match event {
