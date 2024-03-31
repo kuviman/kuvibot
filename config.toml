@@ -1,2 +1,17 @@
 bot_account = "kuvibot"
 channel = "kuviman"
+
+pushup_reward = "test"
+
+[[text_commands]]
+alias = "!bot"
+text = "Here's my source code: https://github.com/kuviman/kuvibot"
+
+
+[[text_commands]]
+alias = "!man"
+text = "alt account that is about programming (Rust): https://twitch.tv/kuviman"
+
+[[text_commands]]
+alias = "!boy"
+text = "alt account that is about gaming (Factorio): https://twitch.tv/kuviboy"
