@@ -61,7 +61,7 @@ async fn main() -> eyre::Result<()> {
         .parse_env("LOG")
         .init();
 
-    let config: Config = toml::de::from_str(&std::fs::read_to_string("config.toml")?)?;
+    let config: Config = toml::de::from_str(&std::fs::read_to_string("kuvibot.toml")?)?;
     let tokens = get_tokens(&config).await?;
     let mut ttv = TwitchApi::connect(&config.channel, &tokens).await?;
     ttv.say("Hello, im a bot").await;
