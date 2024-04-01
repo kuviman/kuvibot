@@ -32,11 +32,16 @@
         in
         {
           default = with pkgs; mkShell {
+            strictDeps = true;
             packages = [
               openssl
               pkg-config
               rust-toolchain
             ];
+            OPENSSL_LIB_DIR = "${openssl.out}/lib";
+            OPENSSL_ROOT_DIR = "${openssl.out}";
+            OPENSSL_INCLUDE_DIR = "${openssl.dev}/include";
+            # RUST_BACKTRACE = 1;
           };
         });
 
