@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use std::collections::BTreeMap;
 
 use twitch_bot::service;
@@ -32,6 +33,7 @@ pub struct Config {
 #[derive(Default, serde::Serialize, serde::Deserialize)]
 struct Save {
     pushups: BTreeMap<chrono::NaiveDate, u64>,
+    remembers: Vec<String>,
 }
 
 impl Save {
@@ -101,7 +103,9 @@ async fn main() -> eyre::Result<()> {
             }
             Event::Tmi(msg) => {
                 if let tmi::Message::Privmsg(msg) = msg.as_typed()? {
-                    if let Some(cmd) = msg.text().split_whitespace().next() {
+                    let msg = msg.text().trim();
+                    if let Some(cmd) = msg.split_whitespace().next() {
+                        let text = msg.strip_prefix(cmd).unwrap().trim();
                         match cmd {
                             "!pushups" => {
                                 let today = save.pushups.get(&today()).copied().unwrap_or_default();
@@ -112,6 +116,19 @@ async fn main() -> eyre::Result<()> {
                                 ))
                                 .await;
                             }
+                            "!remember" => {
+                                save.remembers.push(text.to_owned());
+                                save.save()?;
+                                ttv.say("Memory must grow").await;
+                            }
+                            "!remind" => match save.remembers.choose(&mut thread_rng()) {
+                                Some(thing) => {
+                                    ttv.say(format!("Remember: {thing}")).await;
+                                }
+                                None => {
+                                    ttv.say("Memory is empty D:").await;
+                                }
+                            },
                             _ => {
                                 if let Some(cmd) = config
                                     .text_commands
