@@ -32,7 +32,7 @@
         in
         {
           default = with pkgs; mkShell {
-            buildInputs = [
+            packages = [
               openssl
               pkg-config
               rust-toolchain
