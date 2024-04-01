@@ -1,7 +1,13 @@
+use std::collections::BTreeMap;
+
 use twitch_bot::service;
 use twitch_bot::service::{Event, TwitchApi};
 
 mod secret;
+
+fn today() -> chrono::NaiveDate {
+    chrono::Local::now().date_naive()
+}
 
 #[derive(serde::Deserialize)]
 pub struct TextCommand {
@@ -10,16 +16,22 @@ pub struct TextCommand {
 }
 
 #[derive(serde::Deserialize)]
+pub struct PushupRewardConfig {
+    pub title: String,
+    pub pushups: u64,
+}
+
+#[derive(serde::Deserialize)]
 pub struct Config {
     pub bot_account: String,
     pub channel: String,
-    pub pushup_reward: String,
+    pub pushup_reward: PushupRewardConfig,
     pub text_commands: Vec<TextCommand>,
 }
 
 #[derive(Default, serde::Serialize, serde::Deserialize)]
 struct Save {
-    pushups: u64,
+    pushups: BTreeMap<chrono::NaiveDate, u64>,
 }
 
 impl Save {
@@ -76,11 +88,12 @@ async fn main() -> eyre::Result<()> {
             ) => {
                 match redemption.message {
                     twitch_api::eventsub::Message::Notification(data) => {
-                        if data.reward.title == config.pushup_reward {
-                            save.pushups += 10;
-                            save.save()?;
-                            ttv.say(format!("Total pushups today: {}", save.pushups))
+                        if data.reward.title == config.pushup_reward.title {
+                            let today = save.pushups.entry(today()).or_default();
+                            *today += config.pushup_reward.pushups;
+                            ttv.say(format!("pushups += {}", config.pushup_reward.pushups))
                                 .await;
+                            save.save()?;
                         }
                     }
                     _ => todo!(),
@@ -91,8 +104,13 @@ async fn main() -> eyre::Result<()> {
                     if let Some(cmd) = msg.text().split_whitespace().next() {
                         match cmd {
                             "!pushups" => {
-                                ttv.say(format!("Total pushups today: {}", save.pushups))
-                                    .await;
+                                let today = save.pushups.get(&today()).copied().unwrap_or_default();
+                                let total = save.pushups.values().copied().sum::<u64>();
+                                ttv.say(format!(
+                                    "Total pushups today: {today}, \
+                                    Total recorded pushups: {total}"
+                                ))
+                                .await;
                             }
                             _ => {
                                 if let Some(cmd) = config

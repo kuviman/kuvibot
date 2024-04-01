@@ -1,7 +1,9 @@
 bot_account = "kuvibot"
 channel = "kuviboy"
 
-pushup_reward = "10 pushups"
+[pushup_reward]
+title = "10 pushups"
+pushups = 10
 
 [[text_commands]]
 alias = "!seed"
