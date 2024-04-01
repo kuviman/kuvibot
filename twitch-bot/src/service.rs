@@ -1,7 +1,6 @@
 use futures::FutureExt;
 
-pub mod auth;
-mod eventsub;
+use crate::eventsub;
 
 #[derive(Clone)]
 pub struct Tokens {

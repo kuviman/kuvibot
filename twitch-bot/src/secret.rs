@@ -1,29 +1,22 @@
 use serde::{Deserialize, Serialize};
 
-use twitch_bot::auth;
-
 #[derive(Serialize, Deserialize)]
-pub struct TtvConfig {
+pub struct SecretsConfig {
     pub client_id: String,
     pub client_secret: String,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Config {
-    // pub db: DbConfig,
-    pub ttv: TtvConfig,
-}
-
 pub struct Secrets {
     path: std::path::PathBuf,
-    pub config: Config,
+    pub config: SecretsConfig,
 }
 
 impl Secrets {
     pub fn init_from(path: impl AsRef<std::path::Path>) -> eyre::Result<Self> {
         log::debug!("Initializing secrets");
         let path = path.as_ref().to_owned();
-        let config: Config = toml::from_str(&std::fs::read_to_string(path.join("config.toml"))?)?;
+        let config: SecretsConfig =
+            toml::from_str(&std::fs::read_to_string(path.join("config.toml"))?)?;
         log::debug!("Secrets are all set up");
         Ok(Self { path, config })
     }
@@ -37,18 +30,18 @@ impl Secrets {
         let login = login.as_ref();
         log::debug!("Getting ttv token for {:?}", login);
         let tokens_file_path = self.path.join("tokens").join(format!("{}.json", login));
-        let tokens: auth::Tokens = match std::fs::File::open(&tokens_file_path) {
+        let tokens: crate::auth::Tokens = match std::fs::File::open(&tokens_file_path) {
             Ok(file) => {
                 log::debug!("Reading existing tokens");
-                let tokens: auth::Tokens = serde_json::from_reader(file)?;
-                if auth::validate(&tokens.access_token).await? {
+                let tokens: crate::auth::Tokens = serde_json::from_reader(file)?;
+                if crate::auth::validate(&tokens.access_token).await? {
                     log::debug!("Token still valid");
                     tokens
                 } else {
                     log::debug!("Token invalid, refreshing");
-                    auth::refresh(
-                        &self.config.ttv.client_id,
-                        &self.config.ttv.client_secret,
+                    crate::auth::refresh(
+                        &self.config.client_id,
+                        &self.config.client_secret,
                         &tokens.refresh_token,
                     )
                     .await?
@@ -56,11 +49,12 @@ impl Secrets {
             }
             Err(_) => {
                 log::info!("Auth not setup, prepare to login as {:?}", login);
-                auth::authenticate(
-                    &self.config.ttv.client_id,
-                    &self.config.ttv.client_secret,
+                crate::auth::authenticate(
+                    &self.config.client_id,
+                    &self.config.client_secret,
                     true,
-                    &["channel:read:redemptions", "chat:edit", "chat:read"].map(auth::Scope::new),
+                    &["channel:read:redemptions", "chat:edit", "chat:read"]
+                        .map(crate::auth::Scope::new),
                 )
                 .await?
             }
