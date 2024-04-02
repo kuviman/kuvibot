@@ -1,0 +1,15 @@
+# Requires nightly build of rustfmt
+unstable_features = true
+
+# Enforce line endings, though this should be handled by Git
+newline_style = "Unix"
+# Keep string literals under the `max_width` with a backslash
+format_strings = true
+# Format code blocks in documentation
+format_code_in_doc_comments = true
+# Force a consistent style with macro patterns
+format_macro_matchers = true
+# Force imports to be grouped by deepest module per crate
+imports_granularity = "Module"
+# Group stock, external, and current crate imports together with newline
+group_imports = "StdExternalCrate"
