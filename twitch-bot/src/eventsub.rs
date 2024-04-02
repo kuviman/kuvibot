@@ -85,6 +85,6 @@ pub async fn run(
                 websocket_lite::Opcode::Pong => unreachable!("ping"),
             }
         }
-        panic!("eventsub stopped sending messages wtf");
+        log::info!("eventsub connection was closed, reconnecting");
     }
 }
