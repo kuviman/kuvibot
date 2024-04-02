@@ -31,7 +31,7 @@ text = "I use Nix BTW - https://nixos.org/"
 
 [[text_commands]]
 alias = "!rules"
-text = "Desert, deathworld, no water (except start), minimum trees, no flamethrower turrets, no landmines, no laser turrets, no turret creeping, no picking up dead body"
+text = "All resource sliders to the minimum, deathworld marathon"
 
 [[text_commands]]
 alias = "!bot"
