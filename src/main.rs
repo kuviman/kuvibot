@@ -1,6 +1,6 @@
-use rand::prelude::*;
 use std::collections::BTreeMap;
 
+use rand::prelude::*;
 use twitch_bot::service;
 use twitch_bot::service::{Event, TwitchApi};
 
@@ -111,8 +111,7 @@ async fn main() -> eyre::Result<()> {
                                 let today = save.pushups.get(&today()).copied().unwrap_or_default();
                                 let total = save.pushups.values().copied().sum::<u64>();
                                 ttv.say(format!(
-                                    "Total pushups today: {today}, \
-                                    Total recorded pushups: {total}"
+                                    "Total pushups today: {today}, Total recorded pushups: {total}"
                                 ))
                                 .await;
                             }

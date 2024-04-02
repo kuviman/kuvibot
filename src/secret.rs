@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-
 use twitch_bot::auth;
 
 #[derive(Serialize, Deserialize)]
