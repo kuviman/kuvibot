@@ -33,3 +33,5 @@ twitch_oauth2 = { version = "0.12.9", features = ["all"] }
 url = "2.5.0"
 websocket-lite = "0.5.2"
 chrono = { version = "0.4.37", features = ["serde"] }
+humantime = "2.1.0"
+chrono-humanize = "0.2.3"

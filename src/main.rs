@@ -143,15 +143,14 @@ async fn main() -> eyre::Result<()> {
                                 }
                             },
                             "!fff" => {
-                                let now = chrono::Utc::now();
-                                let mut fff_datetime = now
+                                let mut fff = chrono::Utc::now()
                                     .with_time(chrono::NaiveTime::from_hms_opt(12, 0, 0).unwrap())
                                     .unwrap();
-                                while fff_datetime.weekday() != chrono::Weekday::Fri {
-                                    fff_datetime += chrono::TimeDelta::days(1);
+                                while fff.weekday() != chrono::Weekday::Fri {
+                                    fff += chrono::TimeDelta::days(1);
                                 }
-                                let until = fff_datetime.signed_duration_since(now);
-                                ttv.say(format!("Time until FFF: {until}")).await;
+                                let fff = chrono_humanize::HumanTime::from(fff);
+                                ttv.say(format!("Next FFF is {fff}")).await;
                             }
                             _ => {
                                 if let Some(cmd) = config
