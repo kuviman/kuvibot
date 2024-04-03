@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use chrono::Datelike;
 use rand::prelude::*;
 use twitch_bot::service;
 use twitch_bot::service::{Event, TwitchApi};
@@ -141,6 +142,17 @@ async fn main() -> eyre::Result<()> {
                                     ttv.say("Memory is empty D:").await;
                                 }
                             },
+                            "!fff" => {
+                                let now = chrono::Utc::now();
+                                let mut fff_datetime = now
+                                    .with_time(chrono::NaiveTime::from_hms_opt(12, 0, 0).unwrap())
+                                    .unwrap();
+                                while fff_datetime.weekday() != chrono::Weekday::Fri {
+                                    fff_datetime += chrono::TimeDelta::days(1);
+                                }
+                                let until = fff_datetime.signed_duration_since(now);
+                                ttv.say(format!("Time until FFF: {until}")).await;
+                            }
                             _ => {
                                 if let Some(cmd) = config
                                     .text_commands
