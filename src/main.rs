@@ -32,7 +32,7 @@ pub struct Config {
 
 #[derive(Default, serde::Serialize, serde::Deserialize)]
 struct Save {
-    pushups: BTreeMap<chrono::NaiveDate, u64>,
+    pushups: BTreeMap<String, BTreeMap<chrono::NaiveDate, u64>>,
     remembers: Vec<String>,
 }
 
@@ -91,25 +91,38 @@ async fn main() -> eyre::Result<()> {
                 match redemption.message {
                     twitch_api::eventsub::Message::Notification(data) => {
                         if data.reward.title == config.pushup_reward.title {
-                            let today = save.pushups.entry(today()).or_default();
-                            *today += config.pushup_reward.pushups;
-                            ttv.say(format!("pushups += {}", config.pushup_reward.pushups))
+                            ttv.say("type !done in chat so that our pushups are recorded")
                                 .await;
-                            save.save()?;
                         }
                     }
                     _ => todo!(),
                 };
             }
             Event::Tmi(msg) => {
-                if let tmi::Message::Privmsg(msg) = msg.as_typed()? {
-                    let msg = msg.text().trim();
+                if let tmi::Message::Privmsg(pmsg) = msg.as_typed()? {
+                    let msg = pmsg.text().trim();
                     if let Some(cmd) = msg.split_whitespace().next() {
                         let text = msg.strip_prefix(cmd).unwrap().trim();
                         match cmd {
+                            "!done" => {
+                                let amount = text.parse().unwrap_or(config.pushup_reward.pushups);
+                                let today = save
+                                    .pushups
+                                    .entry(pmsg.sender().name().into_owned())
+                                    .or_default()
+                                    .entry(today())
+                                    .or_default();
+                                *today += amount;
+                                save.save()?;
+                            }
                             "!pushups" => {
-                                let today = save.pushups.get(&today()).copied().unwrap_or_default();
-                                let total = save.pushups.values().copied().sum::<u64>();
+                                let pushups = save.pushups.get(&*pmsg.sender().name());
+                                let today = pushups
+                                    .and_then(|pushups| pushups.get(&today()).copied())
+                                    .unwrap_or_default();
+                                let total = pushups
+                                    .map(|pushups| pushups.values().copied().sum::<u64>())
+                                    .unwrap_or_default();
                                 ttv.say(format!(
                                     "Total pushups today: {today}, Total recorded pushups: {total}"
                                 ))
