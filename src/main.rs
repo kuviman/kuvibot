@@ -92,8 +92,7 @@ async fn main() -> eyre::Result<()> {
                 match redemption.message {
                     twitch_api::eventsub::Message::Notification(data) => {
                         if data.reward.title == config.pushup_reward.title {
-                            ttv.say("type !done in chat so that our pushups are recorded")
-                                .await;
+                            ttv.say("type !done in chat to record your pushups").await;
                         }
                     }
                     _ => todo!(),
