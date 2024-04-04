@@ -146,12 +146,16 @@ async fn main() -> eyre::Result<()> {
                             },
                             "!fff" => {
                                 let mut fff = chrono::Utc::now()
+                                    .with_timezone(&chrono_tz::Europe::Prague)
                                     .with_time(chrono::NaiveTime::from_hms_opt(12, 0, 0).unwrap())
                                     .unwrap();
                                 while fff.weekday() != chrono::Weekday::Fri {
                                     fff += chrono::TimeDelta::days(1);
                                 }
-                                let fff = chrono_humanize::HumanTime::from(fff);
+                                let fff = chrono_humanize::HumanTime::from(fff).to_text_en(
+                                    chrono_humanize::Accuracy::Precise,
+                                    chrono_humanize::Tense::Future,
+                                );
                                 ttv.say(format!("Next FFF is {fff}")).await;
                             }
                             _ => {

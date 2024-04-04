@@ -35,3 +35,4 @@ websocket-lite = "0.5.2"
 chrono = { version = "0.4.37", features = ["serde"] }
 humantime = "2.1.0"
 chrono-humanize = "0.2.3"
+chrono-tz = "0.8.6"
