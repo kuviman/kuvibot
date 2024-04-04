@@ -101,6 +101,9 @@ async fn main() -> eyre::Result<()> {
             Event::Tmi(msg) => {
                 if let tmi::Message::Privmsg(pmsg) = msg.as_typed()? {
                     let msg = pmsg.text().trim();
+                    if msg.contains("69") {
+                        ttv.say("nice").await;
+                    }
                     if let Some(cmd) = msg.split_whitespace().next() {
                         let text = msg.strip_prefix(cmd).unwrap().trim();
                         match cmd {
