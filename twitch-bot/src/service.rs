@@ -10,7 +10,7 @@ pub struct Tokens {
 
 pub struct TwitchApi {
     event_receiver: async_channel::Receiver<Event>,
-    say_sender: async_channel::Sender<String>,
+    say_sender: async_channel::Sender<(String, Option<String>)>,
 }
 
 impl TwitchApi {
@@ -33,7 +33,7 @@ impl TwitchApi {
                 Ok::<_, eyre::Error>(())
             }
         });
-        let (say_sender, say_receiver) = async_channel::bounded::<String>(1);
+        let (say_sender, say_receiver) = async_channel::bounded::<(String, Option<String>)>(1);
         let _tmi = tokio::spawn({
             let channel = channel.to_owned();
             let token = tokens.bot.clone();
@@ -70,8 +70,13 @@ impl TwitchApi {
                             let _ = event_sender.send(Event::Tmi(msg)).await;
                         }
                         say = say_receiver.recv().fuse() => {
-                            if let Ok(say) = say {
-                                tmi.privmsg(&channel, &say).send().await?;
+                            if let Ok((text, reply_to)) = say {
+                                let msg = tmi.privmsg(&channel, &text);
+                                if let Some(reply_to) = reply_to {
+                                    msg.reply_to(&reply_to).send().await?;
+                                } else {
+                                    msg.send().await?;
+                                }
                             }
                         }
                     }
@@ -97,7 +102,14 @@ impl TwitchApi {
     }
 
     pub async fn say(&mut self, text: impl AsRef<str>) {
-        let _ = self.say_sender.send(text.as_ref().to_owned()).await;
+        let _ = self.say_sender.send((text.as_ref().to_owned(), None)).await;
+    }
+
+    pub async fn reply(&mut self, text: impl AsRef<str>, reply_to: impl AsRef<str>) {
+        let _ = self
+            .say_sender
+            .send((text.as_ref().to_owned(), Some(reply_to.as_ref().to_owned())))
+            .await;
     }
 }
 

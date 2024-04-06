@@ -106,9 +106,10 @@ async fn main() -> eyre::Result<()> {
             }
             Event::Tmi(msg) => {
                 if let tmi::Message::Privmsg(pmsg) = msg.as_typed()? {
+                    let reply = pmsg.message_id();
                     let msg = pmsg.text().trim();
                     if msg.contains("69") {
-                        ttv.say("nice").await;
+                        ttv.reply("nice", reply).await;
                     }
                     if let Some(cmd) = msg.split_whitespace().next() {
                         let text = msg.strip_prefix(cmd).unwrap().trim();
@@ -132,9 +133,13 @@ async fn main() -> eyre::Result<()> {
                                 let total = pushups
                                     .map(|pushups| pushups.values().copied().sum::<u64>())
                                     .unwrap_or_default();
-                                ttv.say(format!(
-                                    "Total pushups today: {today}, Total recorded pushups: {total}"
-                                ))
+                                ttv.reply(
+                                    format!(
+                                        "Total pushups today: {today}, Total recorded pushups: \
+                                         {total}"
+                                    ),
+                                    reply,
+                                )
                                 .await;
                             }
                             "!remember" => {
