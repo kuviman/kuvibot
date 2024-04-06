@@ -24,11 +24,17 @@ pub struct PushupRewardConfig {
 }
 
 #[derive(serde::Deserialize)]
+pub struct FffConfig {
+    pub ask: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
 pub struct Config {
     pub bot_account: String,
     pub channel: String,
     pub pushup_reward: PushupRewardConfig,
     pub text_commands: Vec<TextCommand>,
+    pub fff: FffConfig,
 }
 
 #[derive(Default, serde::Serialize, serde::Deserialize)]
@@ -145,18 +151,24 @@ async fn main() -> eyre::Result<()> {
                                 }
                             },
                             "!fff" => {
-                                let mut fff = chrono::Utc::now()
-                                    .with_timezone(&chrono_tz::Europe::Prague)
-                                    .with_time(chrono::NaiveTime::from_hms_opt(12, 0, 0).unwrap())
-                                    .unwrap();
-                                while fff.weekday() != chrono::Weekday::Fri {
-                                    fff += chrono::TimeDelta::days(1);
+                                if let Some(name) = &config.fff.ask {
+                                    ttv.say(format!("Next FFF is in <ask {name}>")).await;
+                                } else {
+                                    let mut fff = chrono::Utc::now()
+                                        .with_timezone(&chrono_tz::Europe::Prague)
+                                        .with_time(
+                                            chrono::NaiveTime::from_hms_opt(12, 0, 0).unwrap(),
+                                        )
+                                        .unwrap();
+                                    while fff.weekday() != chrono::Weekday::Fri {
+                                        fff += chrono::TimeDelta::days(1);
+                                    }
+                                    let fff = chrono_humanize::HumanTime::from(fff).to_text_en(
+                                        chrono_humanize::Accuracy::Precise,
+                                        chrono_humanize::Tense::Future,
+                                    );
+                                    ttv.say(format!("Next FFF is {fff}")).await;
                                 }
-                                let fff = chrono_humanize::HumanTime::from(fff).to_text_en(
-                                    chrono_humanize::Accuracy::Precise,
-                                    chrono_humanize::Tense::Future,
-                                );
-                                ttv.say(format!("Next FFF is {fff}")).await;
                             }
                             _ => {
                                 if let Some(cmd) = config

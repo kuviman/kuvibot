@@ -1,6 +1,9 @@
 bot_account = "kuvibot"
 channel = "kuviboy"
 
+[fff]
+# ask = "veldak"
+
 [pushup_reward]
 title = "10 pushups"
 pushups = 10
