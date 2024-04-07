@@ -106,6 +106,7 @@ async fn main() -> eyre::Result<()> {
             }
             Event::Tmi(msg) => {
                 if let tmi::Message::Privmsg(pmsg) = msg.as_typed()? {
+                    let sender = &*pmsg.sender().name();
                     let reply = pmsg.message_id();
                     let msg = pmsg.text().trim();
                     if msg.contains("69") {
@@ -126,21 +127,23 @@ async fn main() -> eyre::Result<()> {
                                 save.save()?;
                             }
                             "!pushups" => {
-                                let pushups = save.pushups.get(&*pmsg.sender().name());
+                                let person = if text.is_empty() { sender } else { text };
+                                let pushups = save.pushups.get(person);
                                 let today = pushups
                                     .and_then(|pushups| pushups.get(&today()).copied())
                                     .unwrap_or_default();
                                 let total = pushups
                                     .map(|pushups| pushups.values().copied().sum::<u64>())
                                     .unwrap_or_default();
-                                ttv.reply(
-                                    format!(
-                                        "Total pushups today: {today}, Total recorded pushups: \
-                                         {total}"
-                                    ),
-                                    reply,
-                                )
-                                .await;
+                                if total == 0 {
+                                    ttv.say(format!("{person} was never seen doing pushups :O"))
+                                        .await;
+                                } else {
+                                    ttv.say(format!(
+                                        "{person}'s pushups today: {today}, total: {total}"
+                                    ))
+                                    .await;
+                                }
                             }
                             "!remember" => {
                                 save.remembers.push(text.to_owned());
