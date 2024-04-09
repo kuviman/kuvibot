@@ -20,7 +20,7 @@ pub struct TextCommand {
 #[derive(serde::Deserialize)]
 pub struct PushupRewardConfig {
     pub title: String,
-    pub pushups: u64,
+    pub pushups: i64,
 }
 
 #[derive(serde::Deserialize)]
@@ -39,7 +39,7 @@ pub struct Config {
 
 #[derive(Default, serde::Serialize, serde::Deserialize)]
 struct Save {
-    pushups: BTreeMap<String, BTreeMap<chrono::NaiveDate, u64>>,
+    pushups: BTreeMap<String, BTreeMap<chrono::NaiveDate, i64>>,
     remembers: Vec<String>,
 }
 
@@ -116,7 +116,17 @@ async fn main() -> eyre::Result<()> {
                         let text = msg.strip_prefix(cmd).unwrap().trim();
                         match cmd {
                             "!done" => {
-                                let amount = text.parse().unwrap_or(config.pushup_reward.pushups);
+                                let amount = if text.trim().is_empty() {
+                                    config.pushup_reward.pushups
+                                } else {
+                                    match text.parse() {
+                                        Ok(number) => number,
+                                        Err(_) => {
+                                            ttv.reply("wut", reply).await;
+                                            continue;
+                                        }
+                                    }
+                                };
                                 let today = save
                                     .pushups
                                     .entry(pmsg.sender().name().into_owned())
@@ -133,7 +143,7 @@ async fn main() -> eyre::Result<()> {
                                     .and_then(|pushups| pushups.get(&today()).copied())
                                     .unwrap_or_default();
                                 let total = pushups
-                                    .map(|pushups| pushups.values().copied().sum::<u64>())
+                                    .map(|pushups| pushups.values().copied().sum::<i64>())
                                     .unwrap_or_default();
                                 if total == 0 {
                                     ttv.say(format!("{person} was never seen doing pushups :O"))
