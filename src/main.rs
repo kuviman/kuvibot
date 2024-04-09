@@ -136,6 +136,23 @@ async fn main() -> eyre::Result<()> {
                                 *today += amount;
                                 save.save()?;
                             }
+                            "!pushboard" => {
+                                let mut all: Vec<(&str, i64)> = save
+                                    .pushups
+                                    .iter()
+                                    .map(|(who, log)| (who.as_str(), log.values().copied().sum()))
+                                    .collect();
+                                all.sort_by_key(|(_name, pushups)| -pushups);
+                                let mut top = String::new();
+                                for (index, (who, pushups)) in all.into_iter().take(5).enumerate() {
+                                    if index != 0 {
+                                        top += ", ";
+                                    }
+                                    let rank = index + 1;
+                                    top += &format!("{rank}. {who} - {pushups}");
+                                }
+                                ttv.say(format!("Pushups leaderboard: {top}")).await;
+                            }
                             "!pushups" => {
                                 let person = if text.is_empty() { sender } else { text };
                                 let pushups = save.pushups.get(person);
