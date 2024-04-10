@@ -9,6 +9,10 @@ title = "10 pushups"
 pushups = 10
 
 [[text_commands]]
+alias = "!mods"
+text = "StatsGUI, Disco Science, Manual Inventory Sorting"
+
+[[text_commands]]
 alias = "!seed"
 text = "3319653119"
 
