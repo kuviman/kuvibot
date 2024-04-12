@@ -13,12 +13,12 @@ title = "50 pushups"
 pushups = 50
 
 [[text_commands]]
-alias = "!mods"
-text = "StatsGUI, Disco Science, Manual Inventory Sorting"
+alias = "!commands"
+text = "See here: https://github.com/kuviman/kuvibot"
 
 [[text_commands]]
-alias = "!seed"
-text = "3319653119"
+alias = "!mods"
+text = "StatsGUI, Disco Science, Manual Inventory Sorting"
 
 [[text_commands]]
 alias = "!discord"
