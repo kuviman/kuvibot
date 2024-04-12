@@ -4,9 +4,13 @@ channel = "kuviboy"
 [fff]
 ask = "veldak"
 
-[pushup_reward]
+[[pushup_rewards]]
 title = "10 pushups"
 pushups = 10
+
+[[pushup_rewards]]
+title = "50 pushups"
+pushups = 50
 
 [[text_commands]]
 alias = "!mods"

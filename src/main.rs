@@ -32,7 +32,7 @@ pub struct FffConfig {
 pub struct Config {
     pub bot_account: String,
     pub channel: String,
-    pub pushup_reward: PushupRewardConfig,
+    pub pushup_rewards: Vec<PushupRewardConfig>,
     pub text_commands: Vec<TextCommand>,
     pub fff: FffConfig,
 }
@@ -89,6 +89,8 @@ async fn main() -> eyre::Result<()> {
 
     let mut save = Save::load()?;
 
+    let mut default_pushups = None;
+
     loop {
         let event = ttv.recv().await;
         match event {
@@ -97,8 +99,17 @@ async fn main() -> eyre::Result<()> {
             ) => {
                 match redemption.message {
                     twitch_api::eventsub::Message::Notification(data) => {
-                        if data.reward.title == config.pushup_reward.title {
-                            ttv.say("type !done in chat to record your pushups").await;
+                        if let Some(pushups) = config
+                            .pushup_rewards
+                            .iter()
+                            .find(|reward| reward.title == data.reward.title)
+                        {
+                            default_pushups = Some(pushups.pushups);
+                            ttv.say(format!(
+                                "type !done in chat if you did {} pushups",
+                                pushups.pushups,
+                            ))
+                            .await;
                         }
                     }
                     _ => todo!(),
@@ -117,7 +128,13 @@ async fn main() -> eyre::Result<()> {
                         match cmd {
                             "!done" => {
                                 let amount = if text.trim().is_empty() {
-                                    config.pushup_reward.pushups
+                                    match default_pushups {
+                                        Some(amount) => amount,
+                                        None => {
+                                            ttv.reply("How many?", reply).await;
+                                            continue;
+                                        }
+                                    }
                                 } else {
                                     match text.parse() {
                                         Ok(number) => number,
@@ -134,6 +151,11 @@ async fn main() -> eyre::Result<()> {
                                     .entry(today())
                                     .or_default();
                                 *today += amount;
+                                ttv.reply(
+                                    format!("good job!, you did {} pushups today", *today),
+                                    reply,
+                                )
+                                .await;
                                 save.save()?;
                             }
                             "!pushboard" => {
