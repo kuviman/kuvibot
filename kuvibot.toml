@@ -21,6 +21,10 @@ alias = "!mods"
 text = "StatsGUI, Disco Science, Manual Inventory Sorting"
 
 [[text_commands]]
+alias = "!vods"
+text = "All streams are archived here: https://www.youtube.com/@kuviVODs"
+
+[[text_commands]]
 alias = "!discord"
 text = "Join the discord! https://discord.gg/qPuvJ3fT7u"
 
@@ -42,7 +46,7 @@ text = "I use Nix BTW - https://nixos.org/"
 
 [[text_commands]]
 alias = "!rules"
-text = "All resource sliders to the minimum, deathworld marathon"
+text = "Ribbon world preset, but height is 9"
 
 [[text_commands]]
 alias = "!bot"
