@@ -6,8 +6,10 @@
       url = "github:nix-systems/default";
       flake = false;
     };
+    crane.url = "github:ipetkov/crane";
+    crane.inputs.nixpkgs.follows = "nixpkgs";
   };
-  outputs = { self, nixpkgs, rust-overlay, systems }:
+  outputs = { self, nixpkgs, rust-overlay, systems, crane }:
     let
       inherit (nixpkgs) lib;
       eachSystem = lib.genAttrs (import systems);
@@ -18,6 +20,24 @@
         });
     in
     {
+      apps = eachSystem (system:
+        let
+          pkgs = pkgsFor.${system};
+          craneLib = crane.mkLib pkgs;
+          kuvibot = craneLib.buildPackage {
+            src = craneLib.cleanCargoSource ./.;
+            buildInputs = with pkgs;[
+              pkg-config
+              openssl
+            ];
+          };
+        in
+        {
+          default = {
+            type = "app";
+            program = "${kuvibot}/bin/kuvibot";
+          };
+        });
       devShells = eachSystem (system:
         let
           pkgs = pkgsFor.${system};
