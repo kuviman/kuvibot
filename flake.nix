@@ -71,6 +71,6 @@
             };
         });
 
-      formatter = eachSystem (system: pkgsFor.${system}.nixpkgs-fmt);
+      formatter = eachSystem (system: pkgsFor.${system}.nixfmt-classic);
     };
 }
