@@ -41,6 +41,7 @@ pub struct Config {
 struct Save {
     pushups: BTreeMap<String, BTreeMap<chrono::NaiveDate, i64>>,
     remembers: Vec<String>,
+    holdon: usize,
 }
 
 impl Save {
@@ -90,6 +91,7 @@ async fn main() -> eyre::Result<()> {
     let mut save = Save::load()?;
 
     let mut default_pushups = None;
+    let mut last_holdon = None;
 
     loop {
         let event = ttv.recv().await;
@@ -126,6 +128,21 @@ async fn main() -> eyre::Result<()> {
                     if let Some(cmd) = msg.split_whitespace().next() {
                         let text = msg.strip_prefix(cmd).unwrap().trim();
                         match cmd {
+                            "!holdon" => {
+                                let time = chrono::Local::now();
+                                // Timeout to filter spam
+                                if last_holdon.map_or(true, |last| {
+                                    time.signed_duration_since(last).num_seconds() > 10
+                                }) {
+                                    save.holdon += 1;
+                                    ttv.reply(
+                                        format!("The hold has been on {} times", save.holdon),
+                                        reply,
+                                    )
+                                    .await;
+                                    last_holdon = Some(time);
+                                }
+                            }
                             "!done" => {
                                 let amount = if text.trim().is_empty() {
                                     match default_pushups {
