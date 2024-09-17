@@ -41,6 +41,7 @@ pub struct Config {
 struct Save {
     pushups: BTreeMap<String, BTreeMap<chrono::NaiveDate, i64>>,
     remembers: Vec<String>,
+    #[serde(default)]
     holdon: usize,
 }
 
@@ -142,6 +143,7 @@ async fn main() -> eyre::Result<()> {
                                     .await;
                                     last_holdon = Some(time);
                                 }
+                                save.save()?;
                             }
                             "!done" => {
                                 let amount = if text.trim().is_empty() {
