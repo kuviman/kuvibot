@@ -38,17 +38,16 @@ impl TwitchApi {
             let channel = channel.to_owned();
             let token = tokens.bot.clone();
             async move {
-                let mut tmi = tmi::Client::connect_with(
-                    tmi::client::Config::new(tmi::Credentials::new(
+                let mut tmi = tmi::Client::builder()
+                    .credentials(tmi::Credentials::new(
                         token.login,
                         format!("oauth:{}", token.access_token.as_str()),
-                    )),
-                    tmi::client::DEFAULT_TIMEOUT,
-                )
-                .await
-                .expect("Failed to connect to tmi");
+                    ))
+                    .connect()
+                    .await
+                    .expect("Failed to connect to tmi");
 
-                let channel = tmi::Channel::parse(format!("#{channel}"))?;
+                let channel = format!("#{channel}");
                 tmi.join_all([&channel]).await?;
 
                 log::info!("Joined tmi");

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use rand::thread_rng;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -42,9 +41,9 @@ pub async fn authenticate(
     // in the fragment portion of th e URI). If this string doesn’t match the
     // state string that you passed, ignore the response. The state string
     // should be randomly generated and unique for each OAuth request.
-    use rand::distributions::Distribution;
-    let state: String = rand::distributions::Alphanumeric
-        .sample_iter(thread_rng())
+    use rand::distr::Distribution;
+    let state: String = rand::distr::Alphanumeric
+        .sample_iter(rand::rng())
         .take(16)
         .map(|c| c as char)
         .collect();
@@ -117,6 +116,7 @@ pub async fn refresh(
         .form(&form)
         .send()
         .await?
+        .error_for_status()?
         .json()
         .await?)
 }
@@ -142,25 +142,26 @@ pub async fn wait_for_request_uri() -> eyre::Result<Url> {
     // We just wait for the first connection
     log::debug!("Waiting for connection...");
     let (stream, _) = listener.accept().await?;
+    let stream = hyper_util::rt::TokioIo::new(stream);
     log::debug!("Got connection");
 
     // Use a channel because how else?
     let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel::<hyper::Uri>();
     // We could use oneshot channel but this service fn must be impl FnMut
     // because there may be multiple request even on single connection?
-    let service = |request: hyper::Request<hyper::Body>| {
+    let service = |request: hyper::Request<hyper::body::Incoming>| {
         let sender = sender.clone();
         async move {
             sender.send(request.uri().clone())?;
-            Ok::<_, eyre::Report>(hyper::Response::new(hyper::Body::from(
-                "You may now close this tab",
-            )))
+            Ok::<_, eyre::Report>(hyper::Response::new(
+                "You may now close this tab".to_owned(),
+            ))
         }
     };
     // No keepalive so we return immediately
-    hyper::server::conn::Http::new()
-        .http1_keep_alive(false)
-        .http2_keep_alive_interval(None)
+    hyper::server::conn::http1::Builder::new() // (hyper_util::rt::TokioExecutor::new())
+        .keep_alive(false)
+        // .keep_alive_interval(None)
         .serve_connection(stream, hyper::service::service_fn(service))
         .await?;
     let uri = receiver

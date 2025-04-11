@@ -2,6 +2,34 @@
 resolver = "2"
 members = ["twitch-bot"]
 
+[workspace.dependencies]
+async-channel = "2.2.0"
+clap = { version = "4.5.4", features = ["derive"] }
+dirs = "6"
+env_logger = "0.11.3"
+eyre = "0.6.12"
+futures = "0.3.30"
+hyper = { version = "1", features = ["full"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+log = "0.4.21"
+once_cell = "1.19.0"
+open = "5.1.2"
+rand = "0.9"
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+tmi = "0.9"
+tokio = { version = "1.37.0", features = ["rt-multi-thread", "time", "macros"] }
+toml = "0.8.12"
+twitch_api = { version = "0.7", features = ["all", "reqwest"] }
+twitch_oauth2 = { version = "0.15", features = ["all"] }
+url = "2.5.0"
+websocket-lite = "0.5.2"
+chrono = { version = "0.4.37", features = ["serde"] }
+humantime = "2.1.0"
+chrono-humanize = "0.2.3"
+chrono-tz = "0.8.6"
+
 [package]
 name = "kuvibot"
 version = "0.1.0"
@@ -11,28 +39,28 @@ edition = "2021"
 
 [dependencies]
 twitch-bot = { path = "twitch-bot" }
-async-channel = "2.2.0"
-clap = { version = "4.5.4", features = ["derive"] }
-dirs = "5.0.1"
-env_logger = "0.11.3"
-eyre = "0.6.12"
-futures = "0.3.30"
-hyper = { version = "0.14", features = ["full"] }
-log = "0.4.21"
-once_cell = "1.19.0"
-open = "5.1.2"
-rand = "0.8.5"
-reqwest = { version = "0.11", features = ["json"] }
-serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0.115"
-tmi = "0.5.0"
-tokio = { version = "1.37.0", features = ["rt-multi-thread", "time", "macros"] }
-toml = "0.8.12"
-twitch_api = { version = "0.7.0-rc.7", features = ["all", "reqwest"] }
-twitch_oauth2 = { version = "0.12.9", features = ["all"] }
-url = "2.5.0"
-websocket-lite = "0.5.2"
-chrono = { version = "0.4.37", features = ["serde"] }
-humantime = "2.1.0"
-chrono-humanize = "0.2.3"
-chrono-tz = "0.8.6"
+async-channel.workspace = true
+clap.workspace = true
+dirs.workspace = true
+env_logger.workspace = true
+eyre.workspace = true
+futures.workspace = true
+hyper.workspace = true
+log.workspace = true
+once_cell.workspace = true
+open.workspace = true
+rand.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tmi.workspace = true
+tokio.workspace = true
+toml.workspace = true
+twitch_api.workspace = true
+twitch_oauth2.workspace = true
+url.workspace = true
+websocket-lite.workspace = true
+chrono.workspace = true
+humantime.workspace = true
+chrono-humanize.workspace = true
+chrono-tz.workspace = true

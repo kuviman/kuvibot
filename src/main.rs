@@ -121,7 +121,7 @@ async fn main() -> eyre::Result<()> {
             Event::Tmi(msg) => {
                 if let tmi::Message::Privmsg(pmsg) = msg.as_typed()? {
                     let sender = &*pmsg.sender().name();
-                    let reply = pmsg.message_id();
+                    let reply = pmsg.id();
                     let msg = pmsg.text().trim();
                     if msg.contains("69") {
                         ttv.reply("nice", reply).await;
@@ -132,7 +132,7 @@ async fn main() -> eyre::Result<()> {
                             "!holdon" => {
                                 let time = chrono::Local::now();
                                 // Timeout to filter spam
-                                if last_holdon.map_or(true, |last| {
+                                if last_holdon.is_none_or(|last| {
                                     time.signed_duration_since(last).num_seconds() > 10
                                 }) {
                                     save.holdon += 1;
@@ -218,7 +218,7 @@ async fn main() -> eyre::Result<()> {
                                 save.save()?;
                                 ttv.say("Memory must grow").await;
                             }
-                            "!remind" => match save.remembers.choose(&mut thread_rng()) {
+                            "!remind" => match save.remembers.choose(&mut rand::rng()) {
                                 Some(thing) => {
                                     ttv.say(format!("Remember: {thing}")).await;
                                 }
