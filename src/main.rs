@@ -84,6 +84,9 @@ async fn main() -> eyre::Result<()> {
         .parse_env("LOG")
         .init();
 
+    let mut kast = kast::Kast::new().unwrap();
+    let kast_bot = kast.eval_file("src/bot.ks").unwrap();
+
     let config: Config = toml::de::from_str(&std::fs::read_to_string("kuvibot.toml")?)?;
     let tokens = get_tokens(&config).await?;
     let mut ttv = TwitchApi::connect(&config.channel, &tokens).await?;
@@ -121,10 +124,39 @@ async fn main() -> eyre::Result<()> {
             Event::Tmi(msg) => {
                 if let tmi::Message::Privmsg(pmsg) = msg.as_typed()? {
                     let sender = &*pmsg.sender().name();
-                    let reply = pmsg.id();
+                    let reply_to_msg_id = pmsg.id();
                     let msg = pmsg.text().trim();
+
+                    let run_kast_bot = async || -> eyre::Result<Option<String>> {
+                        let reply = kast
+                            .call(
+                                kast_bot.clone(),
+                                kast::ValueShape::String(msg.to_owned()).into(),
+                            )
+                            .await?;
+                        let reply = reply.into_inferred()?.into_variant()?;
+                        Ok(if reply.name == "Some" {
+                            let reply = reply
+                                .value
+                                .ok_or(eyre::eyre!("kast return :Some with no value???"))?;
+                            let reply = reply.into_value()?.into_inferred()?.into_string()?;
+                            Some(reply)
+                        } else {
+                            None
+                        })
+                    };
+
+                    match run_kast_bot().await {
+                        Ok(reply) => {
+                            if let Some(reply_text) = reply {
+                                ttv.reply(reply_text, reply_to_msg_id).await;
+                            }
+                        }
+                        Err(e) => log::error!("{e}"),
+                    }
+
                     if msg.contains("69") {
-                        ttv.reply("nice", reply).await;
+                        ttv.reply("nice", reply_to_msg_id).await;
                     }
                     if let Some(cmd) = msg.split_whitespace().next() {
                         let text = msg.strip_prefix(cmd).unwrap().trim();
@@ -138,7 +170,7 @@ async fn main() -> eyre::Result<()> {
                                     save.holdon += 1;
                                     ttv.reply(
                                         format!("The hold has been on {} times", save.holdon),
-                                        reply,
+                                        reply_to_msg_id,
                                     )
                                     .await;
                                     last_holdon = Some(time);
@@ -150,7 +182,7 @@ async fn main() -> eyre::Result<()> {
                                     match default_pushups {
                                         Some(amount) => amount,
                                         None => {
-                                            ttv.reply("How many?", reply).await;
+                                            ttv.reply("How many?", reply_to_msg_id).await;
                                             continue;
                                         }
                                     }
@@ -158,7 +190,7 @@ async fn main() -> eyre::Result<()> {
                                     match text.parse() {
                                         Ok(number) => number,
                                         Err(_) => {
-                                            ttv.reply("wut", reply).await;
+                                            ttv.reply("wut", reply_to_msg_id).await;
                                             continue;
                                         }
                                     }
@@ -172,7 +204,7 @@ async fn main() -> eyre::Result<()> {
                                 *today += amount;
                                 ttv.reply(
                                     format!("good job!, you did {} pushups today", *today),
-                                    reply,
+                                    reply_to_msg_id,
                                 )
                                 .await;
                                 save.save()?;
