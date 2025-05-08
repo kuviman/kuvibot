@@ -85,7 +85,9 @@ async fn main() -> eyre::Result<()> {
         .init();
 
     let mut kast = kast::Kast::new().unwrap();
-    let kast_bot = kast.eval_file("src/bot.ks").unwrap();
+    let kast_bot = kast
+        .eval_file(option_env!("BOT_KS").unwrap_or("src/bot.ks"))
+        .unwrap();
 
     let config: Config = toml::de::from_str(&std::fs::read_to_string("kuvibot.toml")?)?;
     let tokens = get_tokens(&config).await?;

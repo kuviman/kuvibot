@@ -30,6 +30,7 @@
               pkg-config
               openssl
             ];
+            BOT_KS = ./src/bot.ks;
           };
         in
         {
