@@ -24,20 +24,29 @@
         let
           pkgs = pkgsFor.${system};
           craneLib = crane.mkLib pkgs;
-          kuvibot = craneLib.buildPackage {
-            src = craneLib.cleanCargoSource ./.;
-            buildInputs = with pkgs;[
-              pkg-config
-              openssl
-            ];
-            BOT_KS = ./src/bot.ks;
+          kuvibot = channel-name:
+            let
+              common-args = {
+                src = craneLib.cleanCargoSource ./.;
+                buildInputs = with pkgs;[
+                  pkg-config
+                  openssl
+                ];
+              };
+            in
+            craneLib.buildPackage (common-args // {
+              cargoArtifacts = craneLib.buildDepsOnly common-args;
+              BOT_KS = ./src-ks;
+              CONFIG = ./config/${channel-name}.toml;
+            });
+          kuvibot-app = channel-name: {
+            type = "app";
+            program = "${kuvibot channel-name}/bin/kuvibot";
           };
         in
         {
-          default = {
-            type = "app";
-            program = "${kuvibot}/bin/kuvibot";
-          };
+          kuviman = kuvibot-app "kuviman";
+          kuviboy = kuvibot-app "kuviboy";
         });
       devShells = eachSystem (system:
         let

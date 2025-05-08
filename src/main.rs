@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 
 use chrono::Datelike;
+use eyre::OptionExt;
 use rand::prelude::*;
 use twitch_bot::service;
 use twitch_bot::service::{Event, TwitchApi};
@@ -77,6 +79,11 @@ async fn get_tokens(config: &Config) -> eyre::Result<service::Tokens> {
     Ok(service::Tokens { bot, channel })
 }
 
+#[derive(clap::Parser)]
+struct CliArgs {
+    config: Option<PathBuf>,
+}
+
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     env_logger::builder()
@@ -84,12 +91,21 @@ async fn main() -> eyre::Result<()> {
         .parse_env("LOG")
         .init();
 
+    let cli_args: CliArgs = clap::Parser::parse();
+
     let mut kast = kast::Kast::new().unwrap();
     let kast_bot = kast
-        .eval_file(option_env!("BOT_KS").unwrap_or("src/bot.ks"))
+        .eval_file(std::path::Path::new(option_env!("BOT_KS").unwrap_or("src-ks")).join("main.ks"))
         .unwrap();
 
-    let config: Config = toml::de::from_str(&std::fs::read_to_string("kuvibot.toml")?)?;
+    let config: Config = {
+        let config = cli_args
+            .config
+            .as_deref()
+            .or(option_env!("CONFIG").map(std::path::Path::new))
+            .ok_or_eyre("Specify config")?;
+        toml::de::from_str(&std::fs::read_to_string(config)?)?
+    };
     let tokens = get_tokens(&config).await?;
     let mut ttv = TwitchApi::connect(&config.channel, &tokens).await?;
     ttv.say("Hello, im a bot").await;
@@ -154,7 +170,7 @@ async fn main() -> eyre::Result<()> {
                                 ttv.reply(reply_text, reply_to_msg_id).await;
                             }
                         }
-                        Err(e) => log::error!("{e}"),
+                        Err(e) => log::error!("{e:?}"),
                     }
 
                     if msg.contains("69") {

@@ -1,0 +1,15 @@
+bot_account = "kuvibot"
+channel = "kuviman"
+text_commands = []
+
+[fff]
+ask = "veldak"
+
+[[pushup_rewards]]
+title = "10 pushups"
+pushups = 10
+
+[[pushup_rewards]]
+title = "50 pushups"
+pushups = 50
+
