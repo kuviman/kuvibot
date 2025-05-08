@@ -5,8 +5,6 @@ let counter = 0 :: int32;
 let config = import "./config.ks"; # TODO configurable
 # dbg config;
 
-let shader_glsl  = comptime (compile_to_glsl shader_fn);
-
 const bot :: string -> Option[string] = message => (
     unwindable exit (
         let reply = fn(text :: string) {
