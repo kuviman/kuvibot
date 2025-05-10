@@ -87,7 +87,7 @@ struct CliArgs {
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     env_logger::builder()
-        .filter_level(log::LevelFilter::Debug)
+        .filter_level(log::LevelFilter::Info)
         .parse_env("LOG")
         .init();
 
