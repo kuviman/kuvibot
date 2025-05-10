@@ -1765,7 +1765,7 @@ dependencies = [
 [[package]]
 name = "kast"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 dependencies = [
  "anymap3",
  "async-executor",
@@ -1804,7 +1804,7 @@ dependencies = [
 [[package]]
 name = "kast-ast"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 dependencies = [
  "decursion",
  "kast-util",
@@ -1815,7 +1815,7 @@ dependencies = [
 [[package]]
 name = "kast-derive-macros"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1825,7 +1825,7 @@ dependencies = [
 [[package]]
 name = "kast-inference"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 dependencies = [
  "anymap3",
  "eyre",
@@ -1837,12 +1837,12 @@ dependencies = [
 [[package]]
 name = "kast-refmap"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 
 [[package]]
 name = "kast-try-hash"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 dependencies = [
  "kast-try-hash-derive",
 ]
@@ -1850,7 +1850,7 @@ dependencies = [
 [[package]]
 name = "kast-try-hash-derive"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1860,7 +1860,7 @@ dependencies = [
 [[package]]
 name = "kast-util"
 version = "0.1.0"
-source = "git+https://github.com/kast-lang/kast#8f49da818981f2695bca3cf54a27383860d7380c"
+source = "git+https://github.com/kast-lang/kast#cd6c26092b365628f407a479c86082caa632dcc9"
 dependencies = [
  "anymap3",
  "kast-try-hash",
