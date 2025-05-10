@@ -11,7 +11,7 @@ const bot :: string -> Option[string] = message => (
             unwind exit (:Some text);
         };
         if HashMap_get (&config.text-commands, &message) is :Some reply_text then (
-            reply reply_text^;
+            reply (reply_text |> clone);
         );
         if message == "!inc" then (
             counter += 1;
