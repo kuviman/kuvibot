@@ -45,7 +45,7 @@ alias = "!os"
 text = "I use Nix BTW - https://nixos.org/"
 
 [[text_commands]]
-alias = "!rules"
+alias = "!challenge"
 text = "Desert + Deathworld + Min Resources + Gun Turrets Only + other rules, see at https://github.com/kuviman/factorio-dry-desert-deathworld"
 
 [[text_commands]]
