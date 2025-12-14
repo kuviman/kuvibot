@@ -14,6 +14,9 @@
         pkgs = import inputs.nixpkgs { inherit system overlays; };
         kast = inputs.kast.packages.${system}.default;
       in with pkgs; {
+        packages.default = pkgs.writeShellScriptBin "kuvibot" ''
+          ${kast}/bin/kast run ${./src}/main.ks
+        '';
         devShells.default = mkShell {
           packages = [
             (pkgs.writeShellScriptBin "kast" ''

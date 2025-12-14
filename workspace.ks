@@ -1,3 +1,3 @@
 .roots = (
-    "main.ks",
+    "src/main.ks",
 )
