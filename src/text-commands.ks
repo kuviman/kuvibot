@@ -29,9 +29,9 @@
     text_command "!dotfiles" = "https://github.com/kuviman/nixfiles";
     text_command "!progress" = "Today we have achieved: a lot";
     text_command "!neovide" = "NeoVim is made smooth with the power of NeoVide: https://neovide.dev/";
-
+    
     text_command "!hellojerem" = "i would consult gpt";
-    text_command "!helloveldak" = "\o/";
+    text_command "!helloveldak" = "\\o/";
     
     text_commands
 )

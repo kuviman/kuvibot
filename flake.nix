@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     kast.url = "github:kast-lang/kast";
+    # kast.url = "git+file:/home/kuviman/projects/kast-lang/kast";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
