@@ -23,7 +23,7 @@ const Option = (
 
 let channel = "kuviman";
 let username = "kuvibot";
-let token = std.fs.read_file ".secret/token" |> String.trim;
+let token = std.fs.read_file ".secret/.access_token" |> String.trim;
 
 let mut stream = Stream.connect "irc.chat.twitch.tv:6667";
 
