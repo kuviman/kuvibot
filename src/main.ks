@@ -1,6 +1,6 @@
 module:
 use std.prelude.*;
-use std.net.tcp;
+use std.net.tcp.Stream;
 
 @syntax "if_is" 10 wrap never = "if" " " value " " "is" " " pattern " " "then" " " body;
 impl syntax (if value is pattern then body) = `(
@@ -25,33 +25,33 @@ let channel = "kuviman";
 let username = "kuvibot";
 let token = std.fs.read_file ".secret/token" |> String.trim;
 
-let stream = tcp.connect "irc.chat.twitch.tv:6667";
+let mut stream = Stream.connect "irc.chat.twitch.tv:6667";
 
 let read = () => (
-    let s = tcp.read_line &stream;
+    let s = Stream.read_line &mut stream;
     if String.at (s, String.length s - 1) != '\r' then (
         panic "where is my \\r????";
     );
     String.substring (s, 0, String.length s - 1)
 );
 
-let writeln = (s :: string) => (
-    tcp.write (&stream, &s);
-    tcp.write (&stream, &"\r\n");
+let writeln = (s :: String) => (
+    Stream.write (&mut stream, &s);
+    Stream.write (&mut stream, &"\r\n");
 );
 
-let send_message_impl = (msg :: string, .reply_to :: Option.t[string]) => (
+let send_message_impl = (msg :: String, .reply_to :: Option.t[String]) => (
     dbg.print msg;
     if reply_to is :Some id then (
-        tcp.write (&stream, &"@reply-parent-msg-id=");
-        tcp.write (&stream, &id);
-        tcp.write (&stream, &" ");
+        Stream.write (&mut stream, &"@reply-parent-msg-id=");
+        Stream.write (&mut stream, &id);
+        Stream.write (&mut stream, &" ");
     );
-    tcp.write (&stream, &"PRIVMSG #");
-    tcp.write (&stream, &channel);
-    tcp.write (&stream, &" :");
-    tcp.write (&stream, &msg);
-    tcp.write (&stream, &"\r\n");
+    Stream.write (&mut stream, &"PRIVMSG #");
+    Stream.write (&mut stream, &channel);
+    Stream.write (&mut stream, &" :");
+    Stream.write (&mut stream, &msg);
+    Stream.write (&mut stream, &"\r\n");
 );
 let send_message = msg => (
     send_message_impl (msg, .reply_to = :None);
@@ -68,14 +68,14 @@ writeln <| "JOIN #" + channel;
 send_message "/me joins the chat";
 
 const Msg = type (
-    .tags :: Map.t[string, string],
-    .prefix :: Option.t[string],
-    .command :: string,
-    .params :: list.t[string],
-    .trailing :: Option.t[string],
+    .tags :: Map.t[String, String],
+    .prefix :: Option.t[String],
+    .command :: String,
+    .params :: List.t[String],
+    .trailing :: Option.t[String],
 );
 
-let rsplit_at = (s :: string, c :: char) -> (string, string) => (
+let rsplit_at = (s :: String, c :: Char) -> (String, String) => (
     let i = String.last_index_of (c, s);
     (
         String.substring (s, 0, i),
@@ -83,27 +83,27 @@ let rsplit_at = (s :: string, c :: char) -> (string, string) => (
     )
 );
 
-let parse_tags = (s :: string) -> Map.t[string, string] => (
-    let tags = Map.create ();
+let parse_tags = (s :: String) -> Map.t[String, String] => (
+    let mut tags = Map.create ();
     String.split (
         s,
         ';',
         part => (
             let key, value = String.split_once (part, '=');
-            Map.add (&tags, key, value);
+            Map.add (&mut tags, key, value);
         ),
     );
     tags
 );
 
-let parse_msg = (msg :: string) -> Msg => with_return (
-    let unparsed = msg;
+let parse_msg = (msg :: String) -> Msg => with_return (
+    let mut unparsed = msg;
     
-    let tags = Map.create ();
-    let prefix = :None;
-    let command = :None;
-    let params = list.create ();
-    let trailing = :None;
+    let mut tags = Map.create ();
+    let mut prefix = :None;
+    let mut command = :None;
+    let mut params = List.create ();
+    let mut trailing = :None;
     
     let add_part = s => (
         let first = String.at (s, 0);
@@ -116,7 +116,7 @@ let parse_msg = (msg :: string) -> Msg => with_return (
         ) else if &command |> Option.is_none then (
             command = :Some s;
         ) else (
-            list.push_back (&params, s);
+            List.push_back (&mut params, s);
         );
     );
     
@@ -143,11 +143,11 @@ let parse_msg = (msg :: string) -> Msg => with_return (
 );
 
 const User = newtype (
-    .nick :: string,
-    .user :: string,
-    .host :: string,
+    .nick :: String,
+    .user :: String,
+    .host :: String,
 );
-let parse_user = (s :: string) -> User => (
+let parse_user = (s :: String) -> User => (
     let before_at, host = String.split_once (s, '@');
     let nick, user = String.split_once (before_at, '!');
     (.nick, .user, .host)
@@ -155,9 +155,16 @@ let parse_user = (s :: string) -> User => (
 
 let text_commands = include "./text-commands.ks";
 
-let on_message = (msg :: string, reply :: string -> ()) => (
+let abilities = include "./abilities.ks";
+
+let on_message = (msg :: String, reply :: String -> ()) => (
     if Map.get (&text_commands, msg) is :Some (&reply_text) then (
         reply reply_text;
+        return;
+    );
+    if abilities (&msg) is :Some (reply_text) then (
+        reply reply_text;
+        return;
     );
 );
 

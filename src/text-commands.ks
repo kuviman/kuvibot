@@ -1,7 +1,7 @@
 (
-    let text_commands = Map.create ();
+    let mut text_commands = Map.create ();
     let new_text_command = (alias, text) => (
-        Map.add (&text_commands, alias, text);
+        Map.add (&mut text_commands, alias, text);
     );
     
     @syntax "new_command" 1 wrap never = "text_command" " " alias " " "=" " " text;
