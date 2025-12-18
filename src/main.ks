@@ -155,9 +155,16 @@ let parse_user = (s :: String) -> User => (
 
 let text_commands = include "./text-commands.ks";
 
+let abilities = include "./abilities.ks";
+
 let on_message = (msg :: String, reply :: String -> ()) => (
     if Map.get (&text_commands, msg) is :Some (&reply_text) then (
         reply reply_text;
+        return;
+    );
+    if abilities (&msg) is :Some (reply_text) then (
+        reply reply_text;
+        return;
     );
 );
 
