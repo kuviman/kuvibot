@@ -1,20 +1,20 @@
 let abilities = (
-    let mut abilities :: List.t[type (
+    let mut abilities :: List.t[type {
         .name :: String,
         .processor :: (.text :: &String) -> Option.t[String]
-    )] = List.create();
+    }] = List.create();
     let compose_abilities = (message :: &String) -> Option.t[String] => with_return (
         for ability in List.iter(&abilities) do (
-            let (.name, .processor) = ability^;
+            let { .name, .processor } = ability^;
             match processor(.text = message) with (
-                | :Some(reply) => return :Some(reply)
+                | :Some reply => return :Some (reply)
                 | :None => ()
             );
         );
         :None
     );
     let new_ability = (name, processor) => (
-        List.push_back(&mut abilities, (.name, .processor));
+        List.push_back(&mut abilities, { .name, .processor });
     );
     
     @syntax "new_ability" 1 @wrap never = "ability" " " alias " " "=" " " text;
@@ -25,7 +25,7 @@ let abilities = (
     # Start abilities here
     ability "69" = (.text) => (
         if String.contains(text^, "69") then (
-            :Some("nice")
+            :Some "nice"
         ) else (
             :None
         )

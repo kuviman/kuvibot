@@ -1,4 +1,6 @@
-.roots = (
-    "src/main.ks",
-    "src/debug-reply.ks",
-)
+{
+    .roots = {
+        "src/main.ks",
+        "src/debug-reply.ks",
+    },
+}
