@@ -32,4 +32,6 @@ text_command "!neovide" = "NeoVim is made smooth with the power of NeoVide: http
 text_command "!hellojerem" = "i would consult gpt";
 text_command "!helloveldak" = "\\o/";
 
+text_command "!d2jam" = "https://d2jam.com";
+
 text_commands
